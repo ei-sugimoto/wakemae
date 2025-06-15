@@ -8,8 +8,9 @@ type Record struct {
 }
 
 type Registry struct {
-	m sync.RWMutex
-	r map[string]Record
+	m            sync.RWMutex
+	r            map[string]Record
+	containerMap sync.Map // containerID -> fqdn mapping
 }
 
 func NewRegistry() *Registry {
@@ -37,6 +38,27 @@ func (rg *Registry) Del(name string) {
 	defer rg.m.Unlock()
 
 	delete(rg.r, name)
+}
+
+func (rg *Registry) RemoveA(name, ip string) {
+	rg.m.Lock()
+	defer rg.m.Unlock()
+
+	if rec, exists := rg.r[name]; exists && rec.IP == ip {
+		delete(rg.r, name)
+	}
+}
+
+func (rg *Registry) AddContainer(containerID, fqdn string) {
+	rg.containerMap.Store(containerID, fqdn)
+}
+
+func (rg *Registry) RemoveContainer(containerID string) (string, bool) {
+	fqdn, exists := rg.containerMap.LoadAndDelete(containerID)
+	if !exists {
+		return "", false
+	}
+	return fqdn.(string), true
 }
 
 func (rg *Registry) Resolve(q string) (ips []string, ok bool) {

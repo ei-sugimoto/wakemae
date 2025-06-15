@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"log"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
@@ -34,18 +35,23 @@ func Listen(reg *registry.Registry) error {
 	f.Add("type", "container")
 	f.Add("event", "start")
 	f.Add("event", "die")
-	f.Add("event", "destory")
+	f.Add("event", "destroy")
 
 	msgs, errs := cli.Events(ctx, events.ListOptions{Filters: f})
 
 	for {
 		select {
 		case msg := <-msgs:
+			log.Println(msg)
 			// Handle container events
 			switch msg.Action {
 			case "start":
 				if err := upsert(ctx, cli, msg.Actor.ID, reg); err != nil {
 					return errors.Wrap(err, "failed to handle container event")
+				}
+			case "die", "destroy":
+				if err := remove(ctx, cli, msg.Actor.ID, reg); err != nil {
+					log.Printf("failed to remove container from registry: %v", err)
 				}
 			}
 		case err := <-errs:
@@ -63,21 +69,16 @@ func upsert(ctx context.Context, cli *client.Client, id string, reg *registry.Re
 	}
 
 	lbl := inspect.Config.Labels
-	name := lbl["dns.name"]
-	if name == "" {
+	fqdn := lbl["wakemae.domain"]
+	if fqdn == "" {
 		return nil
 	}
-
-	domain := lbl["dns.domain"]
-	if domain == "" {
-		domain = "local"
-	}
-	fqdn := name + "." + domain
 
 	ip := firstID(inspect)
 
 	if ip != "" {
 		reg.AddA(fqdn, ip)
+		reg.AddContainer(id, fqdn)
 	}
 
 	return nil
@@ -90,4 +91,28 @@ func firstID(inspect container.InspectResponse) string {
 		}
 	}
 	return ""
+}
+
+func remove(ctx context.Context, cli *client.Client, id string, reg *registry.Registry) error {
+	fqdn, exists := reg.RemoveContainer(id)
+	if !exists {
+		return nil
+	}
+
+	// Try to get IP from inspect, but if it fails, we'll remove all records for this fqdn
+	inspect, err := cli.ContainerInspect(ctx, id)
+	if err != nil {
+		// Container might already be deleted, remove all A records for this fqdn
+		reg.Del(fqdn)
+		return nil
+	}
+
+	ip := firstID(inspect)
+	if ip != "" {
+		reg.RemoveA(fqdn, ip)
+	} else {
+		reg.Del(fqdn)
+	}
+
+	return nil
 }
