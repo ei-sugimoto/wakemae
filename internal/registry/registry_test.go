@@ -11,7 +11,7 @@ func TestRegistry(t *testing.T) {
 	t.Parallel()
 
 	rg := registry.NewRegistry()
-	rg.AddA("10.0.0.2", "redis")
+	rg.AddA("redis", "10.0.0.2")
 	rg.AddCNAME("cache", "redis")
 	ips, ok := rg.Resolve("cache")
 	if !ok {

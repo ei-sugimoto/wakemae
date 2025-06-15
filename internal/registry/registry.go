@@ -18,7 +18,7 @@ func NewRegistry() *Registry {
 	}
 }
 
-func (rg *Registry) AddA(ip, name string) {
+func (rg *Registry) AddA(name, ip string) {
 	rg.m.Lock()
 	defer rg.m.Unlock()
 
