@@ -3,9 +3,6 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile
-    ports:
-      - 15353:5353/udp
-      - 15353:5353/tcp
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
