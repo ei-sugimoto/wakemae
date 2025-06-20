@@ -40,13 +40,9 @@ func run() {
 	rg := registry.NewRegistry()
 	go docker.Listen(rg)
 
-	// 一旦手動で追加
-	rg.AddA("web.docker", "10.0.0.10")
-	rg.AddA("api.docker", "10.0.0.11")
-
 	go func() {
-		if err := dns.Serve(":5353", rg, "8.8.8.8:53"); err != nil {
-			log.Fatal(err)
+		if err := dns.Serve("0.0.0.0:53", rg, "8.8.8.8:53"); err != nil {
+			log.Printf("Failed to start DNS server on port 53: %v", err)
 		}
 	}()
 

@@ -1,0 +1,48 @@
+services:
+  wakemae:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    ports:
+      - 15353:5353/udp
+      - 15353:5353/tcp
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      wakemae_network:
+        ipv4_address: 172.20.0.10
+  
+  web1:
+    image: nginx:latest
+    ports:
+      - 8080:80
+    labels:
+      wakemae.domain: web1.docker
+    dns:
+      - 172.20.0.10
+    networks:
+      wakemae_network:
+        ipv4_address: 172.20.0.11
+    depends_on:
+      - wakemae
+
+  web2:
+    image: nginx:latest
+    ports:
+      - 8081:80
+    labels:
+      wakemae.domain: web2.docker
+    dns:
+      - 172.20.0.10
+    networks:
+      wakemae_network:
+        ipv4_address: 172.20.0.12
+    depends_on:
+      - wakemae
+
+networks:
+  wakemae_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

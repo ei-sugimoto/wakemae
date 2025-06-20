@@ -79,6 +79,7 @@ func upsert(ctx context.Context, cli *client.Client, id string, reg *registry.Re
 	if ip != "" {
 		reg.AddA(fqdn, ip)
 		reg.AddContainer(id, fqdn)
+		log.Printf("Registered domain: %s -> %s (container: %s)", fqdn, ip, id[:12])
 	}
 
 	return nil
