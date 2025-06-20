@@ -11,6 +11,4 @@ FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /app/wakemae .
 
-EXPOSE 5353
-
 CMD ["./wakemae", "serve"]

@@ -38,7 +38,11 @@ func run() {
 	log.Println("Starting wakemae...")
 
 	rg := registry.NewRegistry()
-	go docker.Listen(rg)
+	go func() {
+		if err := docker.Listen(rg); err != nil {
+			log.Printf("Failed to start docker listener: %v", err)
+		}
+	}()
 
 	go func() {
 		if err := dns.Serve("0.0.0.0:53", rg, "8.8.8.8:53"); err != nil {
