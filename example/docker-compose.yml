@@ -1,8 +1,6 @@
 services:
   wakemae:
-    build:
-      context: ../
-      dockerfile: Dockerfile
+    image: ghcr.io/ei-sugimoto/wakemae:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
