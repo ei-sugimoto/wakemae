@@ -9,7 +9,7 @@ import (
 )
 
 func Parse() (*Config, error) {
-	data, err := os.ReadFile("config.yml")
+	data, err := os.ReadFile("/etc/wakemae/config.yml")
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			log.Println("config file not found, using default config")

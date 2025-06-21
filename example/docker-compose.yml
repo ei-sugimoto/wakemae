@@ -3,6 +3,7 @@ services:
     image: ghcr.io/ei-sugimoto/wakemae:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./config.yml:/etc/wakemae/config.yml
     networks:
       wakemae_network:
         ipv4_address: 172.20.0.10
