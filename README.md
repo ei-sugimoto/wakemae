@@ -17,6 +17,8 @@ This project is similar dnsdock.
 
 Wakemae supports configuration via a `config.yml` file. If no configuration file is found, default settings will be used.
 
+`config.yml` should locate under `/etc/wakemae/`.
+
 ### Configuration Example
 
 Create a `config.yml` file in the same directory as the wakemae binary:

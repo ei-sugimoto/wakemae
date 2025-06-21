@@ -39,7 +39,7 @@ func init() {
 func run() {
 	log.Println("Starting wakemae...")
 
-	cfg, err := yaml.Parse()
+	cfg, err := yaml.ParseFile("/etc/wakemae/config.yml")
 	if err != nil {
 		log.Fatalf("Failed to parse config: %v", err)
 	}
