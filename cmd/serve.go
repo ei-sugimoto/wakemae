@@ -8,10 +8,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/ei-sugimoto/wakemae/internal/dns"
 	"github.com/ei-sugimoto/wakemae/internal/docker"
 	"github.com/ei-sugimoto/wakemae/internal/registry"
+	"github.com/ei-sugimoto/wakemae/internal/yaml"
 	"github.com/spf13/cobra"
 )
 
@@ -37,6 +39,11 @@ func init() {
 func run() {
 	log.Println("Starting wakemae...")
 
+	cfg, err := yaml.Parse()
+	if err != nil {
+		log.Fatalf("Failed to parse config: %v", err)
+	}
+
 	rg := registry.NewRegistry()
 	go func() {
 		if err := docker.Listen(rg); err != nil {
@@ -45,7 +52,12 @@ func run() {
 	}()
 
 	go func() {
-		if err := dns.Serve("0.0.0.0:53", rg, "8.8.8.8:53"); err != nil {
+		timeout, err := time.ParseDuration(cfg.DNS.Timeout)
+		if err != nil {
+			log.Printf("Invalid timeout format, using default (5s): %v", err)
+			timeout = 5 * time.Second
+		}
+		if err := dns.Serve(cfg.DNS.BindAddress, rg, cfg.DNS.Upstream, timeout); err != nil {
 			log.Printf("Failed to start DNS server on port 53: %v", err)
 		}
 	}()

@@ -13,6 +13,31 @@ This project is similar dnsdock.
 
 
 
+## Configuration
+
+Wakemae supports configuration via a `config.yml` file. If no configuration file is found, default settings will be used.
+
+### Configuration Example
+
+Create a `config.yml` file in the same directory as the wakemae binary:
+
+```yaml
+dns:
+  bind_address: "127.0.0.1:53"
+  upstream: "1.1.1.1:53"
+  timeout: "5s"
+```
+
+### Configuration Options
+
+| Option | Description | Default Value |
+|--------|-------------|---------------|
+| `dns.bind_address` | DNS server bind address and port | `127.0.0.1:53` |
+| `dns.upstream` | Upstream DNS server for fallback queries | `1.1.1.1:53` |
+| `dns.timeout` | DNS query timeout | `5s` |
+
+If `config.yml` is not found, wakemae will use the default configuration shown above.
+
 ## Usage
 ### Docker Compose Example (reccomend)
 
@@ -84,11 +109,7 @@ wakemae serve
 
 ### Options
 
-In the current version, the following settings are hardcoded:
-
-- DNS Port: 53 (UDP/TCP)
-- Bind Address: 0.0.0.0:53
-- Upstream DNS Server: 8.8.8.8:53
+Configuration can be customized via the `config.yml` file. See the [Configuration](#configuration) section for details.
 
 ## Development
 ### Running Tests

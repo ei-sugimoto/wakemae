@@ -10,8 +10,8 @@ import (
 	"github.com/miekg/dns"
 )
 
-func Serve(addr string, rg *registry.Registry, upstream string) error {
-	resolver := &server{rg: rg, upstream: upstream}
+func Serve(addr string, rg *registry.Registry, upstream string, timeout time.Duration) error {
+	resolver := &server{rg: rg, upstream: upstream, timeout: timeout}
 
 	mux := dns.NewServeMux()
 	mux.HandleFunc(".", resolver.handle) // catch‑all
@@ -30,6 +30,7 @@ func Serve(addr string, rg *registry.Registry, upstream string) error {
 type server struct {
 	rg       *registry.Registry
 	upstream string // host:port
+	timeout  time.Duration
 }
 
 func (s *server) handle(w dns.ResponseWriter, req *dns.Msg) {
@@ -54,7 +55,7 @@ func (s *server) handle(w dns.ResponseWriter, req *dns.Msg) {
 	}
 
 	// Fallback to upstream resolver
-	c := dns.Client{Timeout: 2 * time.Second}
+	c := dns.Client{Timeout: s.timeout}
 	u := s.upstream
 	if !strings.Contains(u, ":") { // default port
 		u += ":53"
